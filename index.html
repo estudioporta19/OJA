@@ -5,44 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestão de Orquestra</title>
     <style>
-        /* Reset de estilos */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Estilos globais do corpo */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
-            display: flex; /* Para centralizar o conteúdo verticalmente se necessário */
-            align-items: center; /* Centraliza o conteúdo verticalmente */
-            justify-content: center; /* Centraliza o conteúdo horizontalmente */
-            padding: 20px 0; /* Espaçamento superior e inferior para evitar que o conteúdo toque as bordas */
         }
 
-        /* Container principal */
         .container {
             max-width: 1200px;
-            width: 95%; /* Garante que o container ocupe a maior parte da largura em telas menores */
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* Estilo dos cartões (formulários, painéis) */
         .card {
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             padding: 30px;
             margin-bottom: 20px;
-            backdrop-filter: blur(10px); /* Efeito de desfoque de fundo */
+            backdrop-filter: blur(10px);
         }
 
-        /* Cabeçalho principal */
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -55,7 +45,6 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* Painéis e formulário de login - visibilidade */
         .login-form, .admin-panel, .musician-panel {
             display: none;
         }
@@ -64,7 +53,6 @@
             display: block;
         }
 
-        /* Grupos de formulário */
         .form-group {
             margin-bottom: 20px;
         }
@@ -76,23 +64,21 @@
             color: #555;
         }
 
-        /* Estilos de inputs e selects */
         input[type="text"], input[type="password"], input[type="date"], input[type="time"], select, textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #e1e1e1;
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: border-color 0.3s ease;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); /* Sombra mais visível no foco */
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        /* Botões gerais */
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -102,7 +88,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease; /* Adicionado opacity para transições */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             margin-right: 10px;
             margin-bottom: 10px;
         }
@@ -111,14 +97,7 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        
-        .btn.active { /* Estilo para botões ativos (ex: disponibilidade) */
-            opacity: 0.8;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
-            transform: translateY(0);
-        }
 
-        /* Variações de botões */
         .btn-secondary {
             background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
         }
@@ -131,7 +110,6 @@
             background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
         }
 
-        /* Lista de eventos */
         .event-list {
             display: grid;
             gap: 15px;
@@ -143,12 +121,11 @@
             border-radius: 10px;
             padding: 20px;
             border-left: 5px solid #667eea;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease;
         }
 
         .event-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
         .event-header {
@@ -172,7 +149,6 @@
             text-transform: uppercase;
         }
 
-        /* Cores para tipos de evento */
         .type-concerto {
             background: #e8f5e8;
             color: #27ae60;
@@ -186,15 +162,12 @@
         .event-details {
             color: #666;
             margin-bottom: 15px;
-            line-height: 1.6; /* Melhor legibilidade */
         }
 
-        /* Seção de disponibilidade para músicos */
         .availability-section {
             display: flex;
             gap: 10px;
             align-items: center;
-            flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas menores */
         }
 
         .status-indicator {
@@ -202,10 +175,8 @@
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: 600;
-            white-space: nowrap; /* Evita que o texto quebre */
         }
 
-        /* Cores para indicadores de status */
         .status-confirmado {
             background: #d4edda;
             color: #155724;
@@ -221,7 +192,6 @@
             color: #856404;
         }
 
-        /* Estatísticas */
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -235,7 +205,6 @@
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .stat-number {
@@ -244,7 +213,6 @@
             margin-bottom: 5px;
         }
 
-        /* Botão de Sair */
         .logout-btn {
             position: absolute;
             top: 20px;
@@ -256,7 +224,6 @@
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            z-index: 10; /* Garante que o botão fique acima de outros elementos */
         }
 
         .logout-btn:hover {
@@ -264,13 +231,10 @@
             color: #667eea;
         }
 
-        /* Abas de navegação (Admin Panel) */
         .nav-tabs {
             display: flex;
             margin-bottom: 20px;
             border-bottom: 2px solid #e1e1e1;
-            overflow-x: auto; /* Permite scroll horizontal em telas pequenas */
-            -webkit-overflow-scrolling: touch; /* Suaviza o scroll no iOS */
         }
 
         .nav-tab {
@@ -283,11 +247,6 @@
             font-weight: 600;
             color: #666;
             transition: all 0.3s ease;
-            white-space: nowrap; /* Impede que o texto da aba quebre */
-        }
-
-        .nav-tab:hover {
-            color: #667eea;
         }
 
         .nav-tab.active {
@@ -295,28 +254,20 @@
             border-bottom-color: #667eea;
         }
 
-        /* Conteúdo das abas */
         .tab-content {
             display: none;
         }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Detalhes expandíveis (sumário) */
         details {
             border: 1px solid #e1e1e1;
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 8px;
             background: #fafafa;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
 
         details[open] {
             background: #f8f9fa;
-            border-color: #667eea; /* Borda colorida quando aberto */
         }
 
         details summary {
@@ -324,52 +275,10 @@
             padding: 5px;
             border-radius: 5px;
             transition: background-color 0.2s ease;
-            cursor: pointer;
-            display: flex; /* Para alinhar o triângulo e o texto */
-            align-items: center;
-        }
-
-        details summary::-webkit-details-marker { /* Esconde o marcador padrão do Chrome/Safari */
-            display: none;
-        }
-
-        details summary::before { /* Adiciona um marcador personalizado */
-            content: '►';
-            margin-right: 10px;
-            font-size: 0.8em;
-            transition: transform 0.2s ease;
-        }
-
-        details[open] summary::before {
-            transform: rotate(90deg);
         }
 
         details summary:hover {
             background: rgba(102, 126, 234, 0.1);
-        }
-
-        /* Estilos para os músicos listados dentro dos detalhes */
-        .musician-tag {
-            display: inline-block;
-            margin: 2px 8px 2px 0;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.85em;
-        }
-
-        .musician-tag.confirmed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .musician-tag.unavailable {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .musician-tag.pending {
-            background: #fff3cd;
-            color: #856404;
         }
     </style>
 </head>
@@ -382,6 +291,7 @@
 
         <button class="logout-btn" onclick="logout()" style="display: none;">Sair</button>
 
+        <!-- Login Form -->
         <div class="login-form active card">
             <h2 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">🎵 Acesso ao Sistema</h2>
             <div class="form-group">
@@ -393,20 +303,24 @@
                 <input type="password" id="password" placeholder="Digite a sua palavra-passe">
             </div>
             <button class="btn" onclick="login()">Entrar</button>
+
         </div>
 
+        <!-- Admin Panel -->
         <div class="admin-panel card">
             <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showTab(event, 'events')">Eventos</button>
-                <button class="nav-tab" onclick="showTab(event, 'add-event')">Adicionar Evento</button>
-                <button class="nav-tab" onclick="showTab(event, 'statistics')">Estatísticas</button>
+                <button class="nav-tab active" onclick="showTab('events')">Eventos</button>
+                <button class="nav-tab" onclick="showTab('add-event')">Adicionar Evento</button>
+                <button class="nav-tab" onclick="showTab('statistics')">Estatísticas</button>
             </div>
 
+            <!-- Events Tab -->
             <div class="tab-content active" id="events-tab">
                 <h3>📅 Eventos Programados</h3>
                 <div id="admin-events-list" class="event-list"></div>
             </div>
 
+            <!-- Add Event Tab -->
             <div class="tab-content" id="add-event-tab">
                 <h3>➕ Adicionar Novo Evento</h3>
                 <div class="form-group">
@@ -439,13 +353,15 @@
                 <button class="btn" onclick="addEvent()">Adicionar Evento</button>
             </div>
 
+            <!-- Statistics Tab -->
             <div class="tab-content" id="statistics-tab">
                 <h3>📊 Estatísticas</h3>
                 <div class="stats" id="stats-container"></div>
-                <div id="detailed-stats" style="margin-top: 30px;"></div>
+                <div id="detailed-stats"></div>
             </div>
         </div>
 
+        <!-- Musician Panel -->
         <div class="musician-panel card">
             <h2>🎼 Painel do Músico</h2>
             <p>Confirme a sua disponibilidade para os próximos eventos:</p>
@@ -454,13 +370,30 @@
     </div>
 
     <script>
-        // Variáveis globais para armazenar os dados
+        // Data storage
         let currentUser = null;
-        let events = []; // Inicializa vazio, será carregado do Local Storage
-        let availability = {}; // Inicializa vazio, será carregado do Local Storage
+        let events = [
+            {
+                id: 1,
+                title: "Concerto de Ano Novo",
+                type: "concerto",
+                date: "2025-01-15",
+                time: "20:00",
+                location: "Teatro Municipal",
+                description: "Concerto especial para celebrar o Ano Novo"
+            },
+            {
+                id: 2,
+                title: "Ensaio Geral",
+                type: "ensaio",
+                date: "2025-01-12",
+                time: "19:00",
+                location: "Sala de Ensaios",
+                description: "Ensaio preparatório para o concerto"
+            }
+        ];
 
-        // Dados de utilizadores (fixos, não persistem)
-        const users = {
+        let users = {
             admin: { password: 'admin', role: 'admin', name: 'Administrador' },
             sax1: { password: 'musicos', role: 'musician', name: 'Saxofone 1', instrument: 'Saxofone' },
             sax2: { password: 'musicos', role: 'musician', name: 'Saxofone 2', instrument: 'Saxofone' },
@@ -482,58 +415,8 @@
             voz: { password: 'musicos', role: 'musician', name: 'Voz', instrument: 'Vocal' }
         };
 
-        // --- Funções de Persistência de Dados (Local Storage) ---
-        function saveData() {
-            localStorage.setItem('orchestraEvents', JSON.stringify(events));
-            localStorage.setItem('orchestraAvailability', JSON.stringify(availability));
-        }
+        let availability = {};
 
-        function loadData() {
-            const storedEvents = localStorage.getItem('orchestraEvents');
-            const storedAvailability = localStorage.getItem('orchestraAvailability');
-
-            if (storedEvents) {
-                events = JSON.parse(storedEvents);
-            } else {
-                // Dados de exemplo se não houver nada no Local Storage
-                events = [
-                    {
-                        id: 1,
-                        title: "Concerto de Ano Novo",
-                        type: "concerto",
-                        date: "2025-01-15",
-                        time: "20:00",
-                        location: "Teatro Municipal",
-                        description: "Concerto especial para celebrar o Ano Novo"
-                    },
-                    {
-                        id: 2,
-                        title: "Ensaio Geral",
-                        type: "ensaio",
-                        date: "2025-01-12",
-                        time: "19:00",
-                        location: "Sala de Ensaios",
-                        description: "Ensaio preparatório para o concerto"
-                    }
-                ];
-            }
-
-            if (storedAvailability) {
-                availability = JSON.parse(storedAvailability);
-            } else {
-                // Disponibilidade de exemplo se não houver nada no Local Storage
-                availability = {
-                    sax1: { 1: 'confirmado', 2: 'confirmado' },
-                    sax2: { 1: 'indisponivel', 2: 'confirmado' },
-                    trombone1: { 1: 'confirmado' },
-                    trompete1: { 1: 'confirmado', 2: 'indisponivel' },
-                    piano: { 1: 'confirmado', 2: 'confirmado' },
-                    bateria: { 2: 'confirmado' }
-                };
-            }
-        }
-
-        // --- Funções de Autenticação ---
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -549,10 +432,6 @@
                     loadStatistics();
                 } else {
                     document.querySelector('.musician-panel').classList.add('active');
-                    // Inicializa a disponibilidade do músico se for a primeira vez
-                    if (!availability[currentUser.username]) {
-                        availability[currentUser.username] = {};
-                    }
                     loadMusicianEvents();
                 }
             } else {
@@ -568,26 +447,16 @@
             document.querySelector('.logout-btn').style.display = 'none';
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
-            // Não é necessário limpar localStorage no logout para que os dados persistam
         }
 
-        // --- Funções de Navegação de Abas (Admin Panel) ---
-        function showTab(event, tabName) {
+        function showTab(tabName) {
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
             event.target.classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
-
-            // Recarrega dados relevantes ao mudar de aba
-            if (tabName === 'events') {
-                loadAdminEvents();
-            } else if (tabName === 'statistics') {
-                loadStatistics();
-            }
         }
 
-        // --- Funções de Gestão de Eventos (Admin) ---
         function addEvent() {
             const title = document.getElementById('event-title').value;
             const type = document.getElementById('event-type').value;
@@ -597,12 +466,12 @@
             const description = document.getElementById('event-description').value;
 
             if (!title || !date || !time || !location) {
-                alert('Por favor, preencha todos os campos obrigatórios: Título, Data, Hora, Local!');
+                alert('Por favor, preencha todos os campos obrigatórios!');
                 return;
             }
 
             const newEvent = {
-                id: Date.now(), // ID único baseado no timestamp
+                id: Date.now(),
                 title,
                 type,
                 date,
@@ -612,35 +481,29 @@
             };
 
             events.push(newEvent);
-            saveData(); // Salva os eventos no Local Storage
             
-            // Limpa o formulário após adicionar
+            // Clear form
             document.getElementById('event-title').value = '';
             document.getElementById('event-date').value = '';
             document.getElementById('event-time').value = '';
             document.getElementById('event-location').value = '';
             document.getElementById('event-description').value = '';
 
-            loadAdminEvents(); // Atualiza a lista de eventos no painel do admin
-            loadStatistics(); // Atualiza as estatísticas
+            loadAdminEvents();
+            loadStatistics();
             alert('Evento adicionado com sucesso!');
         }
 
         function loadAdminEvents() {
             const container = document.getElementById('admin-events-list');
-            container.innerHTML = ''; // Limpa a lista antes de recarregar
+            container.innerHTML = '';
 
-            // Ordena os eventos por data, os mais próximos primeiro
-            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            sortedEvents.forEach(event => {
+            events.forEach(event => {
                 const confirmedMusicians = [];
                 const unavailableMusicians = [];
                 const pendingMusicians = [];
                 
-                // Itera sobre todos os usuários músicos para verificar a disponibilidade
                 Object.keys(users).filter(u => users[u].role === 'musician').forEach(username => {
-                    // Obtém o status de disponibilidade para este evento e músico específico
                     const status = availability[username] ? availability[username][event.id] : 'pendente';
                     const musician = users[username];
                     
@@ -658,14 +521,14 @@
                 eventDiv.innerHTML = `
                     <div class="event-header">
                         <div class="event-title">${event.title}</div>
-                        <span class="event-type type-${event.type}">${event.type === 'concerto' ? 'Concerto' : 'Ensaio'}</span>
+                        <span class="event-type type-${event.type}">${event.type}</span>
                     </div>
                     <div class="event-details">
                         📅 ${formatDate(event.date)} às ${event.time}<br>
                         📍 ${event.location}<br>
                         ${event.description ? `📝 ${event.description}` : ''}
                     </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <span class="status-indicator status-confirmado">✓ ${confirmedMusicians.length} confirmados</span>
                         <span class="status-indicator status-indisponivel">✗ ${unavailableMusicians.length} indisponíveis</span>
                         <span class="status-indicator status-pendente">⏳ ${pendingMusicians.length} pendentes</span>
@@ -673,36 +536,36 @@
                     
                     <div style="margin-top: 15px;">
                         <details style="margin-bottom: 10px;">
-                            <summary style="font-weight: 600; color: #27ae60;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #27ae60;">
                                 ✓ Músicos Confirmados (${confirmedMusicians.length})
                             </summary>
                             <div style="margin-top: 8px; padding-left: 15px;">
                                 ${confirmedMusicians.length > 0 ? 
-                                    confirmedMusicians.map(m => `<span class="musician-tag confirmed">${m.name} (${m.instrument})</span>`).join('') 
+                                    confirmedMusicians.map(m => `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 4px 8px; background: #d4edda; color: #155724; border-radius: 15px; font-size: 0.85em;">${m.name} (${m.instrument})</span>`).join('') 
                                     : '<em style="color: #666;">Nenhum músico confirmado</em>'
                                 }
                             </div>
                         </details>
                         
                         <details style="margin-bottom: 10px;">
-                            <summary style="font-weight: 600; color: #dc3545;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #dc3545;">
                                 ✗ Músicos Indisponíveis (${unavailableMusicians.length})
                             </summary>
                             <div style="margin-top: 8px; padding-left: 15px;">
                                 ${unavailableMusicians.length > 0 ? 
-                                    unavailableMusicians.map(m => `<span class="musician-tag unavailable">${m.name} (${m.instrument})</span>`).join('') 
+                                    unavailableMusicians.map(m => `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 4px 8px; background: #f8d7da; color: #721c24; border-radius: 15px; font-size: 0.85em;">${m.name} (${m.instrument})</span>`).join('') 
                                     : '<em style="color: #666;">Nenhum músico indisponível</em>'
                                 }
                             </div>
                         </details>
                         
                         <details style="margin-bottom: 15px;">
-                            <summary style="font-weight: 600; color: #856404;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #856404;">
                                 ⏳ Respostas Pendentes (${pendingMusicians.length})
                             </summary>
                             <div style="margin-top: 8px; padding-left: 15px;">
                                 ${pendingMusicians.length > 0 ? 
-                                    pendingMusicians.map(m => `<span class="musician-tag pending">${m.name} (${m.instrument})</span>`).join('') 
+                                    pendingMusicians.map(m => `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 4px 8px; background: #fff3cd; color: #856404; border-radius: 15px; font-size: 0.85em;">${m.name} (${m.instrument})</span>`).join('') 
                                     : '<em style="color: #666;">Todos os músicos responderam</em>'
                                 }
                             </div>
@@ -716,36 +579,28 @@
         }
 
         function deleteEvent(eventId) {
-            if (confirm('Tem certeza que deseja eliminar este evento? Esta ação é irreversível.')) {
+            if (confirm('Tem certeza que deseja eliminar este evento?')) {
                 events = events.filter(e => e.id !== eventId);
-                // Limpa os dados de disponibilidade para este evento
+                // Clean availability data for this event
                 Object.keys(availability).forEach(user => {
-                    if (availability[user] && availability[user][eventId]) {
+                    if (availability[user][eventId]) {
                         delete availability[user][eventId];
                     }
                 });
-                saveData(); // Salva as alterações no Local Storage
-                loadAdminEvents(); // Recarrega a lista de eventos
-                loadStatistics(); // Recarrega as estatísticas
-                alert('Evento eliminado com sucesso!');
+                loadAdminEvents();
+                loadStatistics();
             }
         }
 
-        // --- Funções de Gestão de Disponibilidade (Músico) ---
         function loadMusicianEvents() {
             const container = document.getElementById('musician-events-list');
-            container.innerHTML = ''; // Limpa a lista antes de recarregar
+            container.innerHTML = '';
 
-            // Ordena os eventos por data, os mais próximos primeiro
-            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            // Garante que o objeto de disponibilidade para o usuário atual existe
             if (!availability[currentUser.username]) {
                 availability[currentUser.username] = {};
             }
 
-            sortedEvents.forEach(event => {
-                // Obtém o status atual do músico para este evento, ou 'pendente' se não houver
+            events.forEach(event => {
                 const userAvailability = availability[currentUser.username][event.id] || 'pendente';
                 
                 const eventDiv = document.createElement('div');
@@ -753,7 +608,7 @@
                 eventDiv.innerHTML = `
                     <div class="event-header">
                         <div class="event-title">${event.title}</div>
-                        <span class="event-type type-${event.type}">${event.type === 'concerto' ? 'Concerto' : 'Ensaio' : 'Ensaio'}</span>
+                        <span class="event-type type-${event.type}">${event.type}</span>
                     </div>
                     <div class="event-details">
                         📅 ${formatDate(event.date)} às ${event.time}<br>
@@ -779,17 +634,13 @@
         }
 
         function setAvailability(eventId, status) {
-            // Garante que o objeto de disponibilidade para o usuário atual existe
             if (!availability[currentUser.username]) {
                 availability[currentUser.username] = {};
             }
             availability[currentUser.username][eventId] = status;
-            saveData(); // Salva a disponibilidade no Local Storage
-            loadMusicianEvents(); // Atualiza a lista de eventos para refletir a mudança
-            // No painel do músico, não é necessário recarregar estatísticas do admin
+            loadMusicianEvents();
         }
 
-        // --- Funções de Estatísticas (Admin) ---
         function loadStatistics() {
             const statsContainer = document.getElementById('stats-container');
             const detailedContainer = document.getElementById('detailed-stats');
@@ -799,7 +650,6 @@
             const upcomingEvents = events.filter(e => new Date(e.date) >= new Date()).length;
             
             let totalConfirmations = 0;
-            // Calcula o total de confirmações em todos os eventos por todos os músicos
             Object.keys(availability).forEach(user => {
                 Object.keys(availability[user]).forEach(eventId => {
                     if (availability[user][eventId] === 'confirmado') {
@@ -823,40 +673,35 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">${totalConfirmations}</div>
-                    <div>Confirmações Totais</div>
+                    <div>Confirmações</div>
                 </div>
             `;
 
-            // Estatísticas detalhadas por evento
-            let detailedHTML = '<h4>Detalhes de Disponibilidade por Evento:</h4>';
-            if (events.length === 0) {
-                detailedHTML += '<p style="color: #666;">Nenhum evento para exibir estatísticas detalhadas.</p>';
-            } else {
-                events.forEach(event => {
-                    const confirmedCount = Object.keys(availability).filter(user => 
-                        availability[user] && availability[user][event.id] === 'confirmado'
-                    ).length;
-                    
-                    const percentage = totalMusicians > 0 ? Math.round((confirmedCount / totalMusicians) * 100) : 0;
-                    
-                    detailedHTML += `
-                        <div class="event-item" style="margin-top: 10px;">
-                            <strong>${event.title}</strong> - ${formatDate(event.date)}<br>
-                            Confirmações: ${confirmedCount}/${totalMusicians} (${percentage}%)
-                            <div style="background: #e1e1e1; height: 10px; border-radius: 5px; margin-top: 5px;">
-                                <div style="background: #27ae60; height: 100%; width: ${percentage}%; border-radius: 5px;"></div>
-                            </div>
+            // Detailed statistics
+            let detailedHTML = '<h4>Detalhes por Evento:</h4>';
+            events.forEach(event => {
+                const confirmedCount = Object.keys(availability).filter(user => 
+                    availability[user][event.id] === 'confirmado'
+                ).length;
+                
+                const percentage = totalMusicians > 0 ? Math.round((confirmedCount / totalMusicians) * 100) : 0;
+                
+                detailedHTML += `
+                    <div class="event-item" style="margin-top: 10px;">
+                        <strong>${event.title}</strong> - ${formatDate(event.date)}<br>
+                        Confirmações: ${confirmedCount}/${totalMusicians} (${percentage}%)
+                        <div style="background: #e1e1e1; height: 10px; border-radius: 5px; margin-top: 5px;">
+                            <div style="background: #27ae60; height: 100%; width: ${percentage}%; border-radius: 5px;"></div>
                         </div>
-                    `;
-                });
-            }
+                    </div>
+                `;
+            });
             
             detailedContainer.innerHTML = detailedHTML;
         }
 
-        // --- Funções Utilitárias ---
         function formatDate(dateString) {
-            const date = new Date(dateString + 'T00:00:00'); // Adiciona T00:00:00 para evitar problemas de fuso horário
+            const date = new Date(dateString);
             return date.toLocaleDateString('pt-PT', {
                 day: '2-digit',
                 month: '2-digit',
@@ -872,11 +717,15 @@
             }
         }
 
-        // --- Inicialização ao carregar a página ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData(); // Carrega os dados do Local Storage
-            // O formulário de login já está ativo por padrão no HTML
-        });
+        // Initialize with some sample availability data
+        availability = {
+            sax1: { 1: 'confirmado', 2: 'confirmado' },
+            sax2: { 1: 'indisponivel', 2: 'confirmado' },
+            trombone1: { 1: 'confirmado' },
+            trompete1: { 1: 'confirmado', 2: 'indisponivel' },
+            piano: { 1: 'confirmado', 2: 'confirmado' },
+            bateria: { 2: 'confirmado' }
+        };
     </script>
 </body>
 </html>
