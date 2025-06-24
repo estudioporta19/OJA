@@ -110,6 +110,12 @@
             background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
         }
 
+        .btn.active { /* Novo estilo para botões ativos de disponibilidade */
+            border: 2px solid #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+        }
+
         .event-list {
             display: grid;
             gap: 15px;
@@ -258,6 +264,10 @@
             display: none;
         }
 
+        .tab-content.active {
+            display: block;
+        }
+
         details {
             border: 1px solid #e1e1e1;
             border-radius: 8px;
@@ -291,7 +301,6 @@
 
         <button class="logout-btn" onclick="logout()" style="display: none;">Sair</button>
 
-        <!-- Login Form -->
         <div class="login-form active card">
             <h2 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">🎵 Acesso ao Sistema</h2>
             <div class="form-group">
@@ -306,21 +315,18 @@
 
         </div>
 
-        <!-- Admin Panel -->
         <div class="admin-panel card">
             <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showTab('events')">Eventos</button>
-                <button class="nav-tab" onclick="showTab('add-event')">Adicionar Evento</button>
-                <button class="nav-tab" onclick="showTab('statistics')">Estatísticas</button>
+                <button class="nav-tab active" onclick="showTab(event, 'events')">Eventos</button>
+                <button class="nav-tab" onclick="showTab(event, 'add-event')">Adicionar Evento</button>
+                <button class="nav-tab" onclick="showTab(event, 'statistics')">Estatísticas</button>
             </div>
 
-            <!-- Events Tab -->
             <div class="tab-content active" id="events-tab">
                 <h3>📅 Eventos Programados</h3>
                 <div id="admin-events-list" class="event-list"></div>
             </div>
 
-            <!-- Add Event Tab -->
             <div class="tab-content" id="add-event-tab">
                 <h3>➕ Adicionar Novo Evento</h3>
                 <div class="form-group">
@@ -353,7 +359,6 @@
                 <button class="btn" onclick="addEvent()">Adicionar Evento</button>
             </div>
 
-            <!-- Statistics Tab -->
             <div class="tab-content" id="statistics-tab">
                 <h3>📊 Estatísticas</h3>
                 <div class="stats" id="stats-container"></div>
@@ -361,7 +366,6 @@
             </div>
         </div>
 
-        <!-- Musician Panel -->
         <div class="musician-panel card">
             <h2>🎼 Painel do Músico</h2>
             <p>Confirme a sua disponibilidade para os próximos eventos:</p>
@@ -372,27 +376,7 @@
     <script>
         // Data storage
         let currentUser = null;
-        let events = [
-            {
-                id: 1,
-                title: "Concerto de Ano Novo",
-                type: "concerto",
-                date: "2025-01-15",
-                time: "20:00",
-                location: "Teatro Municipal",
-                description: "Concerto especial para celebrar o Ano Novo"
-            },
-            {
-                id: 2,
-                title: "Ensaio Geral",
-                type: "ensaio",
-                date: "2025-01-12",
-                time: "19:00",
-                location: "Sala de Ensaios",
-                description: "Ensaio preparatório para o concerto"
-            }
-        ];
-
+        let events = []; // Começar com eventos vazios para carregar do Local Storage
         let users = {
             admin: { password: 'admin', role: 'admin', name: 'Administrador' },
             sax1: { password: 'musicos', role: 'musician', name: 'Saxofone 1', instrument: 'Saxofone' },
@@ -417,6 +401,57 @@
 
         let availability = {};
 
+        // Funções para guardar e carregar dados do Local Storage
+        function saveData() {
+            localStorage.setItem('orchestraEvents', JSON.stringify(events));
+            localStorage.setItem('orchestraAvailability', JSON.stringify(availability));
+        }
+
+        function loadData() {
+            const storedEvents = localStorage.getItem('orchestraEvents');
+            const storedAvailability = localStorage.getItem('orchestraAvailability');
+
+            if (storedEvents) {
+                events = JSON.parse(storedEvents);
+            } else {
+                // Se não houver eventos guardados, carrega os exemplos iniciais
+                events = [
+                    {
+                        id: 1,
+                        title: "Concerto de Ano Novo",
+                        type: "concerto",
+                        date: "2025-01-15",
+                        time: "20:00",
+                        location: "Teatro Municipal",
+                        description: "Concerto especial para celebrar o Ano Novo"
+                    },
+                    {
+                        id: 2,
+                        title: "Ensaio Geral",
+                        type: "ensaio",
+                        date: "2025-01-12",
+                        time: "19:00",
+                        location: "Sala de Ensaios",
+                        description: "Ensaio preparatório para o concerto"
+                    }
+                ];
+            }
+
+            if (storedAvailability) {
+                availability = JSON.parse(storedAvailability);
+            } else {
+                 // Se não houver disponibilidade guardada, inicializa com alguns exemplos
+                availability = {
+                    sax1: { 1: 'confirmado', 2: 'confirmado' },
+                    sax2: { 1: 'indisponivel', 2: 'confirmado' },
+                    trombone1: { 1: 'confirmado' },
+                    trompete1: { 1: 'confirmado', 2: 'indisponivel' },
+                    piano: { 1: 'confirmado', 2: 'confirmado' },
+                    bateria: { 2: 'confirmado' }
+                };
+            }
+        }
+
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -430,6 +465,8 @@
                     document.querySelector('.admin-panel').classList.add('active');
                     loadAdminEvents();
                     loadStatistics();
+                    // Garante que a primeira aba "Eventos" esteja ativa ao fazer login como admin
+                    showTab(null, 'events'); // 'event' é nulo aqui porque não vem de um clique de botão
                 } else {
                     document.querySelector('.musician-panel').classList.add('active');
                     loadMusicianEvents();
@@ -449,12 +486,30 @@
             document.getElementById('password').value = '';
         }
 
-        function showTab(tabName) {
+        function showTab(event, tabName) {
+            // Remove a classe 'active' de todos os botões de navegação e conteúdos de tab
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            event.target.classList.add('active');
+            // Adiciona a classe 'active' ao botão clicado (se houver)
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // Se 'event' for nulo (chamado no login), ativa o primeiro tab ('events')
+                document.querySelector(`.nav-tab[onclick*="showTab(event, '${tabName}')"]`).classList.add('active');
+            }
+
+            // Ativa o conteúdo do tab correspondente
             document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Se for o tab de estatísticas, recarrega-as
+            if (tabName === 'statistics') {
+                loadStatistics();
+            }
+            // Se for o tab de eventos (para admin), recarrega-os
+            if (tabName === 'events') {
+                loadAdminEvents();
+            }
         }
 
         function addEvent() {
@@ -471,7 +526,7 @@
             }
 
             const newEvent = {
-                id: Date.now(),
+                id: Date.now(), // ID único baseado no timestamp
                 title,
                 type,
                 date,
@@ -481,8 +536,9 @@
             };
 
             events.push(newEvent);
+            saveData(); // Guarda os dados após adicionar um evento
             
-            // Clear form
+            // Limpa o formulário
             document.getElementById('event-title').value = '';
             document.getElementById('event-date').value = '';
             document.getElementById('event-time').value = '';
@@ -492,13 +548,34 @@
             loadAdminEvents();
             loadStatistics();
             alert('Evento adicionado com sucesso!');
+            // Opcional: Mudar para o tab de eventos programados após adicionar
+            showTab(null, 'events'); 
+        }
+
+        function deleteEvent(eventId) {
+            if (confirm('Tem certeza que deseja eliminar este evento?')) {
+                events = events.filter(e => e.id !== eventId);
+                // Limpa os dados de disponibilidade para este evento
+                Object.keys(availability).forEach(user => {
+                    if (availability[user] && availability[user][eventId]) {
+                        delete availability[user][eventId];
+                    }
+                });
+                saveData(); // Guarda os dados após eliminar um evento
+                loadAdminEvents();
+                loadStatistics();
+                alert('Evento eliminado com sucesso!');
+            }
         }
 
         function loadAdminEvents() {
             const container = document.getElementById('admin-events-list');
             container.innerHTML = '';
 
-            events.forEach(event => {
+            // Ordena os eventos por data, os mais próximos primeiro
+            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedEvents.forEach(event => {
                 const confirmedMusicians = [];
                 const unavailableMusicians = [];
                 const pendingMusicians = [];
@@ -521,7 +598,7 @@
                 eventDiv.innerHTML = `
                     <div class="event-header">
                         <div class="event-title">${event.title}</div>
-                        <span class="event-type type-${event.type}">${event.type}</span>
+                        <span class="event-type type-${event.type}">${event.type === 'concerto' ? 'Concerto' : 'Ensaio'}</span>
                     </div>
                     <div class="event-details">
                         📅 ${formatDate(event.date)} às ${event.time}<br>
@@ -578,20 +655,6 @@
             });
         }
 
-        function deleteEvent(eventId) {
-            if (confirm('Tem certeza que deseja eliminar este evento?')) {
-                events = events.filter(e => e.id !== eventId);
-                // Clean availability data for this event
-                Object.keys(availability).forEach(user => {
-                    if (availability[user][eventId]) {
-                        delete availability[user][eventId];
-                    }
-                });
-                loadAdminEvents();
-                loadStatistics();
-            }
-        }
-
         function loadMusicianEvents() {
             const container = document.getElementById('musician-events-list');
             container.innerHTML = '';
@@ -600,7 +663,10 @@
                 availability[currentUser.username] = {};
             }
 
-            events.forEach(event => {
+            // Ordena os eventos por data, os mais próximos primeiro
+            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedEvents.forEach(event => {
                 const userAvailability = availability[currentUser.username][event.id] || 'pendente';
                 
                 const eventDiv = document.createElement('div');
@@ -608,7 +674,7 @@
                 eventDiv.innerHTML = `
                     <div class="event-header">
                         <div class="event-title">${event.title}</div>
-                        <span class="event-type type-${event.type}">${event.type}</span>
+                        <span class="event-type type-${event.type}">${event.type === 'concerto' ? 'Concerto' : 'Ensaio'}</span>
                     </div>
                     <div class="event-details">
                         📅 ${formatDate(event.date)} às ${event.time}<br>
@@ -617,11 +683,11 @@
                     </div>
                     <div class="availability-section">
                         <button class="btn btn-success ${userAvailability === 'confirmado' ? 'active' : ''}" 
-                                onclick="setAvailability(${event.id}, 'confirmado')">
+                                onclick="setAvailability(${event.id}, 'confirmado', this)">
                             ✓ Disponível
                         </button>
                         <button class="btn btn-danger ${userAvailability === 'indisponivel' ? 'active' : ''}" 
-                                onclick="setAvailability(${event.id}, 'indisponivel')">
+                                onclick="setAvailability(${event.id}, 'indisponivel', this)">
                             ✗ Indisponível
                         </button>
                         <span class="status-indicator status-${userAvailability}">
@@ -633,12 +699,18 @@
             });
         }
 
-        function setAvailability(eventId, status) {
+        function setAvailability(eventId, status, buttonElement) {
             if (!availability[currentUser.username]) {
                 availability[currentUser.username] = {};
             }
             availability[currentUser.username][eventId] = status;
-            loadMusicianEvents();
+            saveData(); // Guarda os dados após atualizar a disponibilidade
+            loadMusicianEvents(); // Recarrega para atualizar os botões
+            alert('A sua disponibilidade foi atualizada!');
+            // Se for admin a ver os detalhes de um evento, atualiza a lista de eventos do admin
+            if (currentUser.role === 'admin') {
+                loadAdminEvents();
+            }
         }
 
         function loadStatistics() {
@@ -647,7 +719,12 @@
             
             const totalEvents = events.length;
             const totalMusicians = Object.keys(users).filter(u => users[u].role === 'musician').length;
-            const upcomingEvents = events.filter(e => new Date(e.date) >= new Date()).length;
+            
+            // Filtra apenas eventos futuros para a contagem de "Eventos Futuros"
+            const upcomingEvents = events.filter(e => {
+                const eventDateTime = new Date(`${e.date}T${e.time}`);
+                return eventDateTime > new Date(); // Compara com a data e hora atual
+            }).length;
             
             let totalConfirmations = 0;
             Object.keys(availability).forEach(user => {
@@ -679,23 +756,27 @@
 
             // Detailed statistics
             let detailedHTML = '<h4>Detalhes por Evento:</h4>';
-            events.forEach(event => {
-                const confirmedCount = Object.keys(availability).filter(user => 
-                    availability[user][event.id] === 'confirmado'
-                ).length;
-                
-                const percentage = totalMusicians > 0 ? Math.round((confirmedCount / totalMusicians) * 100) : 0;
-                
-                detailedHTML += `
-                    <div class="event-item" style="margin-top: 10px;">
-                        <strong>${event.title}</strong> - ${formatDate(event.date)}<br>
-                        Confirmações: ${confirmedCount}/${totalMusicians} (${percentage}%)
-                        <div style="background: #e1e1e1; height: 10px; border-radius: 5px; margin-top: 5px;">
-                            <div style="background: #27ae60; height: 100%; width: ${percentage}%; border-radius: 5px;"></div>
+            if (events.length === 0) {
+                detailedHTML += '<p>Não há eventos para mostrar estatísticas detalhadas.</p>';
+            } else {
+                events.forEach(event => {
+                    const confirmedCount = Object.keys(users).filter(user =>
+                        users[user].role === 'musician' && availability[user] && availability[user][event.id] === 'confirmado'
+                    ).length;
+                    
+                    const percentage = totalMusicians > 0 ? Math.round((confirmedCount / totalMusicians) * 100) : 0;
+                    
+                    detailedHTML += `
+                        <div class="event-item" style="margin-top: 10px;">
+                            <strong>${event.title}</strong> - ${formatDate(event.date)}<br>
+                            Confirmações: ${confirmedCount}/${totalMusicians} (${percentage}%)
+                            <div style="background: #e1e1e1; height: 10px; border-radius: 5px; margin-top: 5px;">
+                                <div style="background: #27ae60; height: 100%; width: ${percentage}%; border-radius: 5px;"></div>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
             
             detailedContainer.innerHTML = detailedHTML;
         }
@@ -717,15 +798,15 @@
             }
         }
 
-        // Initialize with some sample availability data
-        availability = {
-            sax1: { 1: 'confirmado', 2: 'confirmado' },
-            sax2: { 1: 'indisponivel', 2: 'confirmado' },
-            trombone1: { 1: 'confirmado' },
-            trompete1: { 1: 'confirmado', 2: 'indisponivel' },
-            piano: { 1: 'confirmado', 2: 'confirmado' },
-            bateria: { 2: 'confirmado' }
-        };
+        // Chamar loadData() ao carregar a página para carregar os dados guardados
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            // Oculta o botão de sair se ninguém estiver logado
+            if (!currentUser) {
+                document.querySelector('.logout-btn').style.display = 'none';
+            }
+        });
+
     </script>
 </body>
 </html>
