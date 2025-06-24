@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Orquestra</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .login-form, .admin-panel, .musician-panel {
+            display: none;
+        }
+
+        .login-form.active, .admin-panel.active, .musician-panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"], input[type="password"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .event-list {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .event-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s ease;
+        }
+
+        .event-item:hover {
+            transform: translateX(5px);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .event-type {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-concerto {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .type-ensaio {
+            background: #e8f4fd;
+            color: #3498db;
+        }
+
+        .event-details {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .availability-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-confirmado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-indisponivel {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e1e1;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        details {
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #fafafa;
+        }
+
+        details[open] {
+            background: #f8f9fa;
+        }
+
+        details summary {
+            font-weight: 600;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        details summary:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎼 Sistema de Gestão de Orquestra</h1>
+            <p>Gestão de Concertos, Ensaios e Disponibilidade</p>
+        </div>
+
+        <button class="logout-btn" onclick="logout()" style="display: none;">Sair</button>
+
+        <!-- Login Form -->
+        <div class="login-form active card">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">🎵 Acesso ao Sistema</h2>
+            <div class="form-group">
+                <label for="username">Nome de Utilizador:</label>
+                <input type="text" id="username" placeholder="Digite o seu nome de utilizador">
+            </div>
+            <div class="form-group">
+                <label for="password">Palavra-passe:</label>
+                <input type="password" id="password" placeholder="Digite a sua palavra-passe">
+            </div>
+            <button class="btn" onclick="login()">Entrar</button>
+
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel card">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('events')">Eventos</button>
+                <button class="nav-tab" onclick="showTab('add-event')">Adicionar Evento</button>
+                <button class="nav-tab" onclick="showTab('statistics')">Estatísticas</button>
+            </div>
+
+            <!-- Events Tab -->
+            <div class="tab-content active" id="events-tab">
+                <h3>📅 Eventos Programados</h3>
+                <div id="admin-events-list" class="event-list"></div>
+            </div>
+
+            <!-- Add Event Tab -->
+            <div class="tab-content" id="add-event-tab">
+                <h3>➕ Adicionar Novo Evento</h3>
+                <div class="form-group">
+                    <label for="event-title">Título do Evento:</label>
+                    <input type="text" id="event-title" placeholder="Ex: Concerto de Natal">
+                </div>
+                <div class="form-group">
+                    <label for="event-type">Tipo:</label>
+                    <select id="event-type">
+                        <option value="concerto">Concerto</option>
+                        <option value="ensaio">Ensaio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-date">Data:</label>
+                    <input type="date" id="event-date">
+                </div>
+                <div class="form-group">
+                    <label for="event-time">Hora:</label>
+                    <input type="time" id="event-time">
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Local:</label>
+                    <input type="text" id="event-location" placeholder="Ex: Auditório Municipal">
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Descrição:</label>
+                    <textarea id="event-description" rows="3" placeholder="Detalhes adicionais sobre o evento"></textarea>
+                </div>
+                <button class="btn" onclick="addEvent()">Adicionar Evento</button>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div class="tab-content" id="statistics-tab">
+                <h3>📊 Estatísticas</h3>
+                <div class="stats" id="stats-container"></div>
+                <div id="detailed-stats"></div>
+            </div>
+        </div>
+
+        <!-- Musician Panel -->
+        <div class="musician-panel card">
+            <h2>🎼 Painel do Músico</h2>
+            <p>Confirme a sua disponibilidade para os próximos eventos:</p>
+            <div id="musician-events-list" class="event-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let currentUser = null;
+        let events = [
+            {
+                id: 1,
+                title: "Concerto de Ano Novo",
+                type: "concerto",
+                date: "2025-01-15",
+                time: "20:00",
+                location: "Teatro Municipal",
+                description: "Concerto especial para celebrar o Ano Novo"
+            },
+            {
+                id: 2,
+                title: "Ensaio Geral",
+                type: "ensaio",
+                date: "2025-01-12",
+                time: "19:00",
+                location: "Sala de Ensaios",
+                description: "Ensaio preparatório para o concerto"
+            }
+        ];
+
+        let users = {
+            admin: { password: 'admin', role: 'admin', name: 'Administrador' },
+            sax1: { password: 'musicos', role: 'musician', name: 'Saxofone 1', instrument: 'Saxofone' },
+            sax2: { password: 'musicos', role: 'musician', name: 'Saxofone 2', instrument: 'Saxofone' },
+            sax3: { password: 'musicos', role: 'musician', name: 'Saxofone 3', instrument: 'Saxofone' },
+            sax4: { password: 'musicos', role: 'musician', name: 'Saxofone 4', instrument: 'Saxofone' },
+            sax5: { password: 'musicos', role: 'musician', name: 'Saxofone 5', instrument: 'Saxofone' },
+            trombone1: { password: 'musicos', role: 'musician', name: 'Trombone 1', instrument: 'Trombone' },
+            trombone2: { password: 'musicos', role: 'musician', name: 'Trombone 2', instrument: 'Trombone' },
+            trombone3: { password: 'musicos', role: 'musician', name: 'Trombone 3', instrument: 'Trombone' },
+            trombone4: { password: 'musicos', role: 'musician', name: 'Trombone 4', instrument: 'Trombone' },
+            trompete1: { password: 'musicos', role: 'musician', name: 'Trompete 1', instrument: 'Trompete' },
+            trompete2: { password: 'musicos', role: 'musician', name: 'Trompete 2', instrument: 'Trompete' },
+            trompete3: { password: 'musicos', role: 'musician', name: 'Trompete 3', instrument: 'Trompete' },
+            trompete4: { password: 'musicos', role: 'musician', name: 'Trompete 4', instrument: 'Trompete' },
+            piano: { password: 'musicos', role: 'musician', name: 'Piano', instrument: 'Piano' },
+            contrabaixo: { password: 'musicos', role: 'musician', name: 'Contrabaixo', instrument: 'Contrabaixo' },
+            bateria: { password: 'musicos', role: 'musician', name: 'Bateria', instrument: 'Bateria' },
+            guitarra: { password: 'musicos', role: 'musician', name: 'Guitarra', instrument: 'Guitarra' },
+            voz: { password: 'musicos', role: 'musician', name: 'Voz', instrument: 'Vocal' }
+        };
+
+        let availability = {};
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (users[username] && users[username].password === password) {
+                currentUser = { username, ...users[username] };
+                document.querySelector('.login-form').classList.remove('active');
+                document.querySelector('.logout-btn').style.display = 'block';
+
+                if (currentUser.role === 'admin') {
+                    document.querySelector('.admin-panel').classList.add('active');
+                    loadAdminEvents();
+                    loadStatistics();
+                } else {
+                    document.querySelector('.musician-panel').classList.add('active');
+                    loadMusicianEvents();
+                }
+            } else {
+                alert('Credenciais inválidas!');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.querySelector('.admin-panel').classList.remove('active');
+            document.querySelector('.musician-panel').classList.remove('active');
+            document.querySelector('.login-form').classList.add('active');
+            document.querySelector('.logout-btn').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        function addEvent() {
+            const title = document.getElementById('event-title').value;
+            const type = document.getElementById('event-type').value;
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value;
+            const location = document.getElementById('event-location').value;
+            const description = document.getElementById('event-description').value;
+
+            if (!title || !date || !time || !location) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            const newEvent = {
+                id: Date.now(),
+                title,
+                type,
+                date,
+                time,
+                location,
+                description
+            };
+
+            events.push(newEvent);
+            
+            // Clear form
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-date').value = '';
+            document.getElementById('event-time').value = '';
+            document.getElementById('event-location').value = '';
+            document.getElementById('event-description').value = '';
+
+            loadAdminEvents();
+            loadStatistics();
+            alert('Evento adicionado com sucesso!');
+        }
+
+        function loadAdminEvents() {
+            const container = document.getElementById('admin-events-list');
+            container.innerHTML = '';
+
+            events.forEach(event => {
+                const confirmedMusicians = [];
+                const unavailableMusicians = [];
+                const pendingMusicians = [];
+                
+                Object.keys(users).filter(u => users[u].role === 'musician').forEach(username => {
+                    const status = availability[username] ? availability[username][event.id] : 'pendente';
+                    const musician = users[username];
+                    
+                    if (status === 'confirmado') {
+                        confirmedMusicians.push(musician);
+                    } else if (status === 'indisponivel') {
+                        unavailableMusicians.push(musician);
+                    } else {
+                        pendingMusicians.push(musician);
+                    }
+                });
+
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event-item';
+                eventDiv.innerHTML = `
+                    <div class="event-header">
+                        <div class="event-title">${event.title}</div>
+                        <span class="event-type type-${event.type}">${event.type}</span>
+                    </div>
+                    <div class="event-details">
+                        📅 ${formatDate(event.date)} às ${event.time}<br>
+                        📍 ${event.location}<br>
+                        ${event.description ? `📝 ${event.description}` : ''}
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <span class="status-indicator status-confirmado">✓ ${confirmedMusicians.length} confirmados</span>
+                        <span class="status-indicator status-indisponivel">✗ ${unavailableMusicians.length} indisponíveis</span>
+                        <span class="status-indicator status-pendente">⏳ ${pendingMusicians.length} pendentes</span>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <details style="margin-bottom: 10px;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #27ae60;">
+                                ✓ Músicos Confirmados (${confirmedMusicians.length})
+                            </summary>
+                            <div style="margin-top: 8px; padding-left: 15px;">
+                                ${confirmedMusicians.length > 0 ? 
+                                    confirmedMusicians.map(m => `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 4px 8px; background: #d4edda; color: #155724; border-radius: 15px; font-size: 0.85em;">${m.name} (${m.instrument})</span>`).join('') 
+                                    : '<em style="color: #666;">Nenhum músico confirmado</em>'
+                                }
+                            </div>
+                        </details>
+                        
+                        <details style="margin-bottom: 10px;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #dc3545;">
+                                ✗ Músicos Indisponíveis (${unavailableMusicians.length})
+                            </summary>
+                            <div style="margin-top: 8px; padding-left: 15px;">
+                                ${unavailableMusicians.length > 0 ? 
+                                    unavailableMusicians.map(m => `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 4px 8px; background: #f8d7da; color: #721c24; border-radius: 15px; font-size: 0.85em;">${m.name} (${m.instrument})</span>`).join('') 
+                                    : '<em style="color: #666;">Nenhum músico indisponível</em>'
+                                }
+                            </div>
+                        </details>
+                        
+                        <details style="margin-bottom: 15px;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #856404;">
+                                ⏳ Respostas Pendentes (${pendingMusicians.length})
+                            </summary>
+                            <div style="margin-top: 8px; padding-left: 15px;">
+                                ${pendingMusicians.length > 0 ? 
+                                    pendingMusicians.map(m => `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 4px 8px; background: #fff3cd; color: #856404; border-radius: 15px; font-size: 0.85em;">${m.name} (${m.instrument})</span>`).join('') 
+                                    : '<em style="color: #666;">Todos os músicos responderam</em>'
+                                }
+                            </div>
+                        </details>
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="deleteEvent(${event.id})">Eliminar Evento</button>
+                `;
+                container.appendChild(eventDiv);
+            });
+        }
+
+        function deleteEvent(eventId) {
+            if (confirm('Tem certeza que deseja eliminar este evento?')) {
+                events = events.filter(e => e.id !== eventId);
+                // Clean availability data for this event
+                Object.keys(availability).forEach(user => {
+                    if (availability[user][eventId]) {
+                        delete availability[user][eventId];
+                    }
+                });
+                loadAdminEvents();
+                loadStatistics();
+            }
+        }
+
+        function loadMusicianEvents() {
+            const container = document.getElementById('musician-events-list');
+            container.innerHTML = '';
+
+            if (!availability[currentUser.username]) {
+                availability[currentUser.username] = {};
+            }
+
+            events.forEach(event => {
+                const userAvailability = availability[currentUser.username][event.id] || 'pendente';
+                
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event-item';
+                eventDiv.innerHTML = `
+                    <div class="event-header">
+                        <div class="event-title">${event.title}</div>
+                        <span class="event-type type-${event.type}">${event.type}</span>
+                    </div>
+                    <div class="event-details">
+                        📅 ${formatDate(event.date)} às ${event.time}<br>
+                        📍 ${event.location}<br>
+                        ${event.description ? `📝 ${event.description}` : ''}
+                    </div>
+                    <div class="availability-section">
+                        <button class="btn btn-success ${userAvailability === 'confirmado' ? 'active' : ''}" 
+                                onclick="setAvailability(${event.id}, 'confirmado')">
+                            ✓ Disponível
+                        </button>
+                        <button class="btn btn-danger ${userAvailability === 'indisponivel' ? 'active' : ''}" 
+                                onclick="setAvailability(${event.id}, 'indisponivel')">
+                            ✗ Indisponível
+                        </button>
+                        <span class="status-indicator status-${userAvailability}">
+                            ${getStatusText(userAvailability)}
+                        </span>
+                    </div>
+                `;
+                container.appendChild(eventDiv);
+            });
+        }
+
+        function setAvailability(eventId, status) {
+            if (!availability[currentUser.username]) {
+                availability[currentUser.username] = {};
+            }
+            availability[currentUser.username][eventId] = status;
+            loadMusicianEvents();
+        }
+
+        function loadStatistics() {
+            const statsContainer = document.getElementById('stats-container');
+            const detailedContainer = document.getElementById('detailed-stats');
+            
+            const totalEvents = events.length;
+            const totalMusicians = Object.keys(users).filter(u => users[u].role === 'musician').length;
+            const upcomingEvents = events.filter(e => new Date(e.date) >= new Date()).length;
+            
+            let totalConfirmations = 0;
+            Object.keys(availability).forEach(user => {
+                Object.keys(availability[user]).forEach(eventId => {
+                    if (availability[user][eventId] === 'confirmado') {
+                        totalConfirmations++;
+                    }
+                });
+            });
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalEvents}</div>
+                    <div>Total de Eventos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalMusicians}</div>
+                    <div>Músicos Registados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${upcomingEvents}</div>
+                    <div>Eventos Futuros</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalConfirmations}</div>
+                    <div>Confirmações</div>
+                </div>
+            `;
+
+            // Detailed statistics
+            let detailedHTML = '<h4>Detalhes por Evento:</h4>';
+            events.forEach(event => {
+                const confirmedCount = Object.keys(availability).filter(user => 
+                    availability[user][event.id] === 'confirmado'
+                ).length;
+                
+                const percentage = totalMusicians > 0 ? Math.round((confirmedCount / totalMusicians) * 100) : 0;
+                
+                detailedHTML += `
+                    <div class="event-item" style="margin-top: 10px;">
+                        <strong>${event.title}</strong> - ${formatDate(event.date)}<br>
+                        Confirmações: ${confirmedCount}/${totalMusicians} (${percentage}%)
+                        <div style="background: #e1e1e1; height: 10px; border-radius: 5px; margin-top: 5px;">
+                            <div style="background: #27ae60; height: 100%; width: ${percentage}%; border-radius: 5px;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            detailedContainer.innerHTML = detailedHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-PT', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'confirmado': return 'Confirmado';
+                case 'indisponivel': return 'Indisponível';
+                default: return 'Pendente';
+            }
+        }
+
+        // Initialize with some sample availability data
+        availability = {
+            sax1: { 1: 'confirmado', 2: 'confirmado' },
+            sax2: { 1: 'indisponivel', 2: 'confirmado' },
+            trombone1: { 1: 'confirmado' },
+            trompete1: { 1: 'confirmado', 2: 'indisponivel' },
+            piano: { 1: 'confirmado', 2: 'confirmado' },
+            bateria: { 2: 'confirmado' }
+        };
+    </script>
+</body>
+</html>
