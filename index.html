@@ -241,6 +241,7 @@
             display: flex;
             margin-bottom: 20px;
             border-bottom: 2px solid #e1e1e1;
+            flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
         }
 
         .nav-tab {
@@ -290,6 +291,35 @@
         details summary:hover {
             background: rgba(102, 126, 234, 0.1);
         }
+
+        /* Styles for Sheet Music section */
+        .sheet-music-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #28a745; /* Green border for music */
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sheet-music-item h4 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .sheet-music-item p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .sheet-music-item .btn {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin-bottom: 0; /* Override default margin */
+        }
     </style>
 </head>
 <body>
@@ -317,9 +347,9 @@
 
         <div class="admin-panel card">
             <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showTab(event, 'events')">Eventos</button>
-                <button class="nav-tab" onclick="showTab(event, 'add-event')">Adicionar Evento</button>
-                <button class="nav-tab" onclick="showTab(event, 'statistics')">Estatísticas</button>
+                <button class="nav-tab active" onclick="showTab(event, 'events', 'admin')">Eventos</button>
+                <button class="nav-tab" onclick="showTab(event, 'add-event', 'admin')">Adicionar Evento</button>
+                <button class="nav-tab" onclick="showTab(event, 'statistics', 'admin')">Estatísticas</button>
             </div>
 
             <div class="tab-content active" id="events-tab">
@@ -367,9 +397,23 @@
         </div>
 
         <div class="musician-panel card">
-            <h2>🎼 Painel do Músico</h2>
-            <p>Confirme a sua disponibilidade para os próximos eventos:</p>
-            <div id="musician-events-list" class="event-list"></div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab(event, 'musician-events', 'musician')">Meus Eventos</button>
+                <button class="nav-tab" onclick="showTab(event, 'sheet-music', 'musician')">Minhas Partituras</button>
+            </div>
+
+            <div class="tab-content active" id="musician-events-tab">
+                <h2>🎼 Painel do Músico</h2>
+                <p>Confirme a sua disponibilidade para os próximos eventos:</p>
+                <div id="musician-events-list" class="event-list"></div>
+            </div>
+
+            <div class="tab-content" id="sheet-music-tab">
+                <h2>🎶 Minhas Partituras</h2>
+                <p>Aqui encontra as partituras específicas para o seu instrumento:</p>
+                <div id="sheet-music-list">
+                    </div>
+            </div>
         </div>
     </div>
 
@@ -401,10 +445,55 @@
 
         let availability = {};
 
+        // --- DADOS DAS PARTITURAS (NOVO) ---
+        // IMPORTANTE: Coloque os ficheiros PDF na mesma pasta do seu HTML, ou use um caminho relativo/absoluto válido.
+        // Exemplo: 'partituras/ConcertoNatal_Piano.pdf' se tiver uma pasta 'partituras'.
+        let sheetMusic = [
+            {
+                id: 101,
+                title: "Concerto de Ano Novo - Partitura do Piano",
+                description: "Partitura completa para piano",
+                url: "partituras/ConcertoAnoNovo_Piano.pdf", // Altere para o seu caminho real
+                instruments: ["Piano"]
+            },
+            {
+                id: 102,
+                title: "Concerto de Ano Novo - Saxofones (todos)",
+                description: "Partitura consolidada para secção de Saxofones",
+                url: "partituras/ConcertoAnoNovo_Sax.pdf", // Altere para o seu caminho real
+                instruments: ["Saxofone"]
+            },
+            {
+                id: 103,
+                title: "Ensaio Geral - Trompetes",
+                description: "Partitura do ensaio para trompetes",
+                url: "partituras/EnsaioGeral_Trompetes.pdf", // Altere para o seu caminho real
+                instruments: ["Trompete"]
+            },
+            {
+                id: 104,
+                title: "Concerto de Jazz - Bateria",
+                description: "Partitura de bateria para o Concerto de Jazz",
+                url: "partituras/ConcertoJazz_Bateria.pdf", // Altere para o seu caminho real
+                instruments: ["Bateria"]
+            },
+            {
+                id: 105,
+                title: "Música de Fundo - Todos os Instrumentos",
+                description: "Partitura geral para todos os músicos (aquecimento)",
+                url: "partituras/MusicaFundo_Todos.pdf", // Altere para o seu caminho real
+                instruments: ["Saxofone", "Trombone", "Trompete", "Piano", "Contrabaixo", "Bateria", "Guitarra", "Vocal"]
+            }
+        ];
+        // --- FIM DADOS DAS PARTITURAS ---
+
+
         // Funções para guardar e carregar dados do Local Storage
         function saveData() {
             localStorage.setItem('orchestraEvents', JSON.stringify(events));
             localStorage.setItem('orchestraAvailability', JSON.stringify(availability));
+            // Não vamos guardar as partituras no Local Storage porque elas são estáticas no código
+            // localStorage.setItem('orchestraSheetMusic', JSON.stringify(sheetMusic)); 
         }
 
         function loadData() {
@@ -466,10 +555,13 @@
                     loadAdminEvents();
                     loadStatistics();
                     // Garante que a primeira aba "Eventos" esteja ativa ao fazer login como admin
-                    showTab(null, 'events'); // 'event' é nulo aqui porque não vem de um clique de botão
+                    showTab(null, 'events', 'admin');
                 } else {
                     document.querySelector('.musician-panel').classList.add('active');
                     loadMusicianEvents();
+                    loadMusicianSheetMusic(); // Carrega as partituras ao fazer login como músico
+                    // Garante que a primeira aba "Meus Eventos" esteja ativa ao fazer login como músico
+                    showTab(null, 'musician-events', 'musician');
                 }
             } else {
                 alert('Credenciais inválidas!');
@@ -486,21 +578,41 @@
             document.getElementById('password').value = '';
         }
 
-        function showTab(event, tabName) {
-            // Remove a classe 'active' de todos os botões de navegação e conteúdos de tab
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        // Função showTab atualizada para lidar com painéis admin/musician
+        function showTab(event, tabName, panelType) {
+            let tabsContainer;
+            let contentsContainer;
+
+            if (panelType === 'admin') {
+                tabsContainer = document.querySelector('.admin-panel .nav-tabs');
+                contentsContainer = document.querySelector('.admin-panel');
+            } else if (panelType === 'musician') {
+                tabsContainer = document.querySelector('.musician-panel .nav-tabs');
+                contentsContainer = document.querySelector('.musician-panel');
+            } else {
+                return; // Caso não seja um tipo de painel válido
+            }
+
+            // Remove a classe 'active' de todos os botões de navegação e conteúdos de tab do painel correto
+            tabsContainer.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            contentsContainer.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
             // Adiciona a classe 'active' ao botão clicado (se houver)
             if (event && event.target) {
                 event.target.classList.add('active');
             } else {
-                // Se 'event' for nulo (chamado no login), ativa o primeiro tab ('events')
-                document.querySelector(`.nav-tab[onclick*="showTab(event, '${tabName}')"]`).classList.add('active');
+                // Se 'event' for nulo (chamado no login), ativa o tab padrão
+                const defaultTabButton = tabsContainer.querySelector(`.nav-tab[onclick*="showTab(event, '${tabName}', '${panelType}')"]`);
+                if (defaultTabButton) {
+                    defaultTabButton.classList.add('active');
+                }
             }
 
             // Ativa o conteúdo do tab correspondente
-            document.getElementById(tabName + '-tab').classList.add('active');
+            const targetTabContent = document.getElementById(tabName + '-tab');
+            if (targetTabContent) {
+                targetTabContent.classList.add('active');
+            }
 
             // Se for o tab de estatísticas, recarrega-as
             if (tabName === 'statistics') {
@@ -509,6 +621,14 @@
             // Se for o tab de eventos (para admin), recarrega-os
             if (tabName === 'events') {
                 loadAdminEvents();
+            }
+            // Se for o tab de eventos do músico, recarrega-os
+            if (tabName === 'musician-events') {
+                loadMusicianEvents();
+            }
+            // Se for o tab de partituras do músico, recarrega-as
+            if (tabName === 'sheet-music') {
+                loadMusicianSheetMusic();
             }
         }
 
@@ -549,7 +669,7 @@
             loadStatistics();
             alert('Evento adicionado com sucesso!');
             // Opcional: Mudar para o tab de eventos programados após adicionar
-            showTab(null, 'events'); 
+            showTab(null, 'events', 'admin');
         }
 
         function deleteEvent(eventId) {
@@ -797,6 +917,36 @@
                 default: return 'Pendente';
             }
         }
+
+        // --- NOVA FUNÇÃO PARA CARREGAR PARTITURAS DO MÚSICO ---
+        function loadMusicianSheetMusic() {
+            const container = document.getElementById('sheet-music-list');
+            container.innerHTML = '';
+
+            const musicianInstrument = currentUser.instrument;
+            const relevantSheetMusic = sheetMusic.filter(music => 
+                music.instruments.includes(musicianInstrument)
+            );
+
+            if (relevantSheetMusic.length === 0) {
+                container.innerHTML = '<p>Não há partituras disponíveis para o seu instrumento neste momento.</p>';
+                return;
+            }
+
+            relevantSheetMusic.forEach(music => {
+                const musicItemDiv = document.createElement('div');
+                musicItemDiv.className = 'sheet-music-item';
+                musicItemDiv.innerHTML = `
+                    <div>
+                        <h4>${music.title}</h4>
+                        <p>${music.description}</p>
+                    </div>
+                    <a href="${music.url}" target="_blank" class="btn btn-success">Ver/Descarregar PDF</a>
+                `;
+                container.appendChild(musicItemDiv);
+            });
+        }
+        // --- FIM NOVA FUNÇÃO ---
 
         // Chamar loadData() ao carregar a página para carregar os dados guardados
         document.addEventListener('DOMContentLoaded', () => {
