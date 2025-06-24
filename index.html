@@ -292,7 +292,7 @@
             background: rgba(102, 126, 234, 0.1);
         }
 
-        /* Styles for Sheet Music section */
+        /* Styles for Sheet Music section (both admin and musician) */
         .sheet-music-item {
             background: #f8f9fa;
             border-radius: 10px;
@@ -319,6 +319,36 @@
             padding: 8px 15px;
             font-size: 0.9em;
             margin-bottom: 0; /* Override default margin */
+        }
+        .sheet-music-item .btn-danger {
+            margin-left: 10px;
+        }
+
+        /* Styles for instrument checkboxes */
+        .instrument-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            background: #fefefe;
+        }
+
+        .instrument-checkboxes label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0; /* Override default label margin */
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .instrument-checkboxes input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+            transform: scale(1.2); /* Make checkboxes slightly larger */
         }
     </style>
 </head>
@@ -349,6 +379,7 @@
             <div class="nav-tabs">
                 <button class="nav-tab active" onclick="showTab(event, 'events', 'admin')">Eventos</button>
                 <button class="nav-tab" onclick="showTab(event, 'add-event', 'admin')">Adicionar Evento</button>
+                <button class="nav-tab" onclick="showTab(event, 'manage-sheet-music', 'admin')">Gerir Partituras</button>
                 <button class="nav-tab" onclick="showTab(event, 'statistics', 'admin')">Estatísticas</button>
             </div>
 
@@ -389,6 +420,36 @@
                 <button class="btn" onclick="addEvent()">Adicionar Evento</button>
             </div>
 
+            <div class="tab-content" id="manage-sheet-music-tab">
+                <h3>🎶 Gerir Partituras</h3>
+                <h4>Adicionar Nova Partitura:</h4>
+                <div class="form-group">
+                    <label for="sheet-title">Título da Partitura:</label>
+                    <input type="text" id="sheet-title" placeholder="Ex: Concerto Natal - Piano">
+                </div>
+                <div class="form-group">
+                    <label for="sheet-description">Descrição:</label>
+                    <textarea id="sheet-description" rows="2" placeholder="Detalhes da partitura"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="sheet-filename">Nome do Ficheiro PDF (ex: ConcertoNatal_Piano.pdf):</label>
+                    <input type="text" id="sheet-filename" placeholder="Coloque o ficheiro na pasta 'partituras/'">
+                    <small style="color: #666;">Certifique-se de que o ficheiro PDF com este nome está na pasta `partituras/`.</small>
+                </div>
+                <div class="form-group">
+                    <label>Atribuir a Instrumentos:</label>
+                    <div id="instrument-checkboxes" class="instrument-checkboxes">
+                        </div>
+                </div>
+                <button class="btn" onclick="addSheetMusic()">Adicionar Partitura</button>
+                
+                <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+                <h4>Partituras Existentes:</h4>
+                <div id="admin-sheet-music-list">
+                    </div>
+            </div>
+
             <div class="tab-content" id="statistics-tab">
                 <h3>📊 Estatísticas</h3>
                 <div class="stats" id="stats-container"></div>
@@ -420,7 +481,8 @@
     <script>
         // Data storage
         let currentUser = null;
-        let events = []; // Começar com eventos vazios para carregar do Local Storage
+        let events = [];
+        let sheetMusic = []; // Agora inicializado vazio para carregar do Local Storage
         let users = {
             admin: { password: 'admin', role: 'admin', name: 'Administrador' },
             sax1: { password: 'musicos', role: 'musician', name: 'Saxofone 1', instrument: 'Saxofone' },
@@ -444,92 +506,35 @@
         };
 
         let availability = {};
-
-        // --- DADOS DAS PARTITURAS (NOVO) ---
-        // IMPORTANTE: Coloque os ficheiros PDF na mesma pasta do seu HTML, ou use um caminho relativo/absoluto válido.
-        // Exemplo: 'partituras/ConcertoNatal_Piano.pdf' se tiver uma pasta 'partituras'.
-        let sheetMusic = [
-            {
-                id: 101,
-                title: "Concerto de Ano Novo - Partitura do Piano",
-                description: "Partitura completa para piano",
-                url: "partituras/ConcertoAnoNovo_Piano.pdf", // Altere para o seu caminho real
-                instruments: ["Piano"]
-            },
-            {
-                id: 102,
-                title: "Concerto de Ano Novo - Saxofones (todos)",
-                description: "Partitura consolidada para secção de Saxofones",
-                url: "partituras/ConcertoAnoNovo_Sax.pdf", // Altere para o seu caminho real
-                instruments: ["Saxofone"]
-            },
-            {
-                id: 103,
-                title: "Ensaio Geral - Trompetes",
-                description: "Partitura do ensaio para trompetes",
-                url: "partituras/EnsaioGeral_Trompetes.pdf", // Altere para o seu caminho real
-                instruments: ["Trompete"]
-            },
-            {
-                id: 104,
-                title: "Concerto de Jazz - Bateria",
-                description: "Partitura de bateria para o Concerto de Jazz",
-                url: "partituras/ConcertoJazz_Bateria.pdf", // Altere para o seu caminho real
-                instruments: ["Bateria"]
-            },
-            {
-                id: 105,
-                title: "Música de Fundo - Todos os Instrumentos",
-                description: "Partitura geral para todos os músicos (aquecimento)",
-                url: "partituras/MusicaFundo_Todos.pdf", // Altere para o seu caminho real
-                instruments: ["Saxofone", "Trombone", "Trompete", "Piano", "Contrabaixo", "Bateria", "Guitarra", "Vocal"]
-            }
-        ];
-        // --- FIM DADOS DAS PARTITURAS ---
+        
+        // Obter uma lista única de instrumentos de todos os músicos
+        const allInstruments = [...new Set(Object.values(users).filter(u => u.role === 'musician').map(u => u.instrument))];
 
 
         // Funções para guardar e carregar dados do Local Storage
         function saveData() {
             localStorage.setItem('orchestraEvents', JSON.stringify(events));
             localStorage.setItem('orchestraAvailability', JSON.stringify(availability));
-            // Não vamos guardar as partituras no Local Storage porque elas são estáticas no código
-            // localStorage.setItem('orchestraSheetMusic', JSON.stringify(sheetMusic)); 
+            localStorage.setItem('orchestraSheetMusic', JSON.stringify(sheetMusic)); // Guardar partituras
         }
 
         function loadData() {
             const storedEvents = localStorage.getItem('orchestraEvents');
             const storedAvailability = localStorage.getItem('orchestraAvailability');
+            const storedSheetMusic = localStorage.getItem('orchestraSheetMusic');
 
             if (storedEvents) {
                 events = JSON.parse(storedEvents);
             } else {
-                // Se não houver eventos guardados, carrega os exemplos iniciais
                 events = [
-                    {
-                        id: 1,
-                        title: "Concerto de Ano Novo",
-                        type: "concerto",
-                        date: "2025-01-15",
-                        time: "20:00",
-                        location: "Teatro Municipal",
-                        description: "Concerto especial para celebrar o Ano Novo"
-                    },
-                    {
-                        id: 2,
-                        title: "Ensaio Geral",
-                        type: "ensaio",
-                        date: "2025-01-12",
-                        time: "19:00",
-                        location: "Sala de Ensaios",
-                        description: "Ensaio preparatório para o concerto"
-                    }
+                    { id: 1, title: "Concerto de Ano Novo", type: "concerto", date: "2025-01-15", time: "20:00", location: "Teatro Municipal", description: "Concerto especial para celebrar o Ano Novo" },
+                    { id: 2, title: "Ensaio Geral", type: "ensaio", date: "2025-01-12", time: "19:00", location: "Sala de Ensaios", description: "Ensaio preparatório para o concerto" }
                 ];
             }
 
             if (storedAvailability) {
                 availability = JSON.parse(storedAvailability);
             } else {
-                 // Se não houver disponibilidade guardada, inicializa com alguns exemplos
                 availability = {
                     sax1: { 1: 'confirmado', 2: 'confirmado' },
                     sax2: { 1: 'indisponivel', 2: 'confirmado' },
@@ -538,6 +543,19 @@
                     piano: { 1: 'confirmado', 2: 'confirmado' },
                     bateria: { 2: 'confirmado' }
                 };
+            }
+
+            if (storedSheetMusic) {
+                sheetMusic = JSON.parse(storedSheetMusic);
+            } else {
+                // Dados de exemplo para as partituras (se não houver nada guardado)
+                sheetMusic = [
+                    { id: 101, title: "Concerto de Ano Novo - Partitura do Piano", description: "Partitura completa para piano", url: "partituras/ConcertoAnoNovo_Piano.pdf", instruments: ["Piano"] },
+                    { id: 102, title: "Concerto de Ano Novo - Saxofones (todos)", description: "Partitura consolidada para secção de Saxofones", url: "partituras/ConcertoAnoNovo_Sax.pdf", instruments: ["Saxofone"] },
+                    { id: 103, title: "Ensaio Geral - Trompetes", description: "Partitura do ensaio para trompetes", url: "partituras/EnsaioGeral_Trompetes.pdf", instruments: ["Trompete"] },
+                    { id: 104, title: "Concerto de Jazz - Bateria", description: "Partitura de bateria para o Concerto de Jazz", url: "partituras/ConcertoJazz_Bateria.pdf", instruments: ["Bateria"] },
+                    { id: 105, title: "Música de Fundo - Todos os Instrumentos", description: "Partitura geral para todos os músicos (aquecimento)", url: "partituras/MusicaFundo_Todos.pdf", instruments: ["Saxofone", "Trombone", "Trompete", "Piano", "Contrabaixo", "Bateria", "Guitarra", "Vocal"] }
+                ];
             }
         }
 
@@ -554,13 +572,13 @@
                     document.querySelector('.admin-panel').classList.add('active');
                     loadAdminEvents();
                     loadStatistics();
-                    // Garante que a primeira aba "Eventos" esteja ativa ao fazer login como admin
-                    showTab(null, 'events', 'admin');
+                    // Garante que o tab "Eventos" esteja ativo ao fazer login como admin
+                    showTab(null, 'events', 'admin'); 
                 } else {
                     document.querySelector('.musician-panel').classList.add('active');
                     loadMusicianEvents();
-                    loadMusicianSheetMusic(); // Carrega as partituras ao fazer login como músico
-                    // Garante que a primeira aba "Meus Eventos" esteja ativa ao fazer login como músico
+                    loadMusicianSheetMusic();
+                    // Garante que o tab "Meus Eventos" esteja ativo ao fazer login como músico
                     showTab(null, 'musician-events', 'musician');
                 }
             } else {
@@ -578,7 +596,6 @@
             document.getElementById('password').value = '';
         }
 
-        // Função showTab atualizada para lidar com painéis admin/musician
         function showTab(event, tabName, panelType) {
             let tabsContainer;
             let contentsContainer;
@@ -614,21 +631,18 @@
                 targetTabContent.classList.add('active');
             }
 
-            // Se for o tab de estatísticas, recarrega-as
+            // Recarregar dados específicos ao mudar de tab
             if (tabName === 'statistics') {
                 loadStatistics();
-            }
-            // Se for o tab de eventos (para admin), recarrega-os
-            if (tabName === 'events') {
+            } else if (tabName === 'events') {
                 loadAdminEvents();
-            }
-            // Se for o tab de eventos do músico, recarrega-os
-            if (tabName === 'musician-events') {
+            } else if (tabName === 'musician-events') {
                 loadMusicianEvents();
-            }
-            // Se for o tab de partituras do músico, recarrega-as
-            if (tabName === 'sheet-music') {
+            } else if (tabName === 'sheet-music') {
                 loadMusicianSheetMusic();
+            } else if (tabName === 'manage-sheet-music') { // NOVO: Recarregar partituras admin
+                loadAdminSheetMusic();
+                populateInstrumentCheckboxes(); // Gerar checkboxes ao abrir o tab
             }
         }
 
@@ -656,7 +670,7 @@
             };
 
             events.push(newEvent);
-            saveData(); // Guarda os dados após adicionar um evento
+            saveData();
             
             // Limpa o formulário
             document.getElementById('event-title').value = '';
@@ -668,20 +682,18 @@
             loadAdminEvents();
             loadStatistics();
             alert('Evento adicionado com sucesso!');
-            // Opcional: Mudar para o tab de eventos programados após adicionar
-            showTab(null, 'events', 'admin');
+            showTab(null, 'events', 'admin'); 
         }
 
         function deleteEvent(eventId) {
             if (confirm('Tem certeza que deseja eliminar este evento?')) {
                 events = events.filter(e => e.id !== eventId);
-                // Limpa os dados de disponibilidade para este evento
                 Object.keys(availability).forEach(user => {
                     if (availability[user] && availability[user][eventId]) {
                         delete availability[user][eventId];
                     }
                 });
-                saveData(); // Guarda os dados após eliminar um evento
+                saveData();
                 loadAdminEvents();
                 loadStatistics();
                 alert('Evento eliminado com sucesso!');
@@ -692,8 +704,12 @@
             const container = document.getElementById('admin-events-list');
             container.innerHTML = '';
 
-            // Ordena os eventos por data, os mais próximos primeiro
             const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (sortedEvents.length === 0) {
+                container.innerHTML = '<p>Não há eventos programados para mostrar.</p>';
+                return;
+            }
 
             sortedEvents.forEach(event => {
                 const confirmedMusicians = [];
@@ -783,8 +799,12 @@
                 availability[currentUser.username] = {};
             }
 
-            // Ordena os eventos por data, os mais próximos primeiro
             const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (sortedEvents.length === 0) {
+                container.innerHTML = '<p>Não há eventos programados para a sua participação.</p>';
+                return;
+            }
 
             sortedEvents.forEach(event => {
                 const userAvailability = availability[currentUser.username][event.id] || 'pendente';
@@ -824,10 +844,9 @@
                 availability[currentUser.username] = {};
             }
             availability[currentUser.username][eventId] = status;
-            saveData(); // Guarda os dados após atualizar a disponibilidade
-            loadMusicianEvents(); // Recarrega para atualizar os botões
+            saveData();
+            loadMusicianEvents();
             alert('A sua disponibilidade foi atualizada!');
-            // Se for admin a ver os detalhes de um evento, atualiza a lista de eventos do admin
             if (currentUser.role === 'admin') {
                 loadAdminEvents();
             }
@@ -838,12 +857,11 @@
             const detailedContainer = document.getElementById('detailed-stats');
             
             const totalEvents = events.length;
-            const totalMusicians = Object.keys(users).filter(u => users[u].role === 'musician').length;
+            const totalMusicians = Object.keys(users).filter(u => u.role === 'musician').length;
             
-            // Filtra apenas eventos futuros para a contagem de "Eventos Futuros"
             const upcomingEvents = events.filter(e => {
                 const eventDateTime = new Date(`${e.date}T${e.time}`);
-                return eventDateTime > new Date(); // Compara com a data e hora atual
+                return eventDateTime > new Date();
             }).length;
             
             let totalConfirmations = 0;
@@ -874,7 +892,6 @@
                 </div>
             `;
 
-            // Detailed statistics
             let detailedHTML = '<h4>Detalhes por Evento:</h4>';
             if (events.length === 0) {
                 detailedHTML += '<p>Não há eventos para mostrar estatísticas detalhadas.</p>';
@@ -901,24 +918,99 @@
             detailedContainer.innerHTML = detailedHTML;
         }
 
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-PT', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
+        // --- FUNÇÕES DE GESTÃO DE PARTITURAS (NOVO) ---
+        function populateInstrumentCheckboxes() {
+            const container = document.getElementById('instrument-checkboxes');
+            container.innerHTML = ''; // Limpa antes de popular
+
+            allInstruments.forEach(instrument => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.innerHTML = `
+                    <label>
+                        <input type="checkbox" value="${instrument}" class="instrument-checkbox"> ${instrument}
+                    </label>
+                `;
+                container.appendChild(checkboxDiv);
             });
         }
 
-        function getStatusText(status) {
-            switch(status) {
-                case 'confirmado': return 'Confirmado';
-                case 'indisponivel': return 'Indisponível';
-                default: return 'Pendente';
+        function addSheetMusic() {
+            const title = document.getElementById('sheet-title').value;
+            const description = document.getElementById('sheet-description').value;
+            const filename = document.getElementById('sheet-filename').value;
+            
+            const selectedInstruments = [];
+            document.querySelectorAll('.instrument-checkbox:checked').forEach(checkbox => {
+                selectedInstruments.push(checkbox.value);
+            });
+
+            if (!title || !filename || selectedInstruments.length === 0) {
+                alert('Por favor, preencha o título, nome do ficheiro e selecione pelo menos um instrumento!');
+                return;
+            }
+
+            const newSheetMusic = {
+                id: Date.now(),
+                title,
+                description,
+                url: `partituras/${filename}`, // Constrói o URL
+                instruments: selectedInstruments
+            };
+
+            sheetMusic.push(newSheetMusic);
+            saveData();
+
+            // Limpa o formulário
+            document.getElementById('sheet-title').value = '';
+            document.getElementById('sheet-description').value = '';
+            document.getElementById('sheet-filename').value = '';
+            document.querySelectorAll('.instrument-checkbox').forEach(checkbox => checkbox.checked = false);
+
+            loadAdminSheetMusic(); // Recarrega a lista no admin
+            alert('Partitura adicionada com sucesso!');
+            // Opcional: manter no tab de gestão de partituras
+            showTab(null, 'manage-sheet-music', 'admin');
+        }
+
+        function deleteSheetMusic(sheetId) {
+            if (confirm('Tem certeza que deseja eliminar esta partitura?')) {
+                sheetMusic = sheetMusic.filter(s => s.id !== sheetId);
+                saveData();
+                loadAdminSheetMusic();
+                loadMusicianSheetMusic(); // Atualizar também o painel do músico, caso esteja aberto
+                alert('Partitura eliminada com sucesso!');
             }
         }
 
-        // --- NOVA FUNÇÃO PARA CARREGAR PARTITURAS DO MÚSICO ---
+        function loadAdminSheetMusic() {
+            const container = document.getElementById('admin-sheet-music-list');
+            container.innerHTML = '';
+
+            if (sheetMusic.length === 0) {
+                container.innerHTML = '<p>Não há partituras registadas para mostrar.</p>';
+                return;
+            }
+
+            sheetMusic.forEach(music => {
+                const musicItemDiv = document.createElement('div');
+                musicItemDiv.className = 'sheet-music-item';
+                musicItemDiv.innerHTML = `
+                    <div>
+                        <h4>${music.title}</h4>
+                        <p>${music.description}</p>
+                        <p>Ficheiro: <code>${music.url.replace('partituras/', '')}</code></p>
+                        <p>Instrumentos: <strong>${music.instruments.join(', ')}</strong></p>
+                    </div>
+                    <div>
+                        <a href="${music.url}" target="_blank" class="btn btn-secondary">Ver PDF</a>
+                        <button class="btn btn-danger" onclick="deleteSheetMusic(${music.id})">Eliminar</button>
+                    </div>
+                `;
+                container.appendChild(musicItemDiv);
+            });
+        }
+        // --- FIM FUNÇÕES DE GESTÃO DE PARTITURAS ---
+
         function loadMusicianSheetMusic() {
             const container = document.getElementById('sheet-music-list');
             container.innerHTML = '';
@@ -946,7 +1038,23 @@
                 container.appendChild(musicItemDiv);
             });
         }
-        // --- FIM NOVA FUNÇÃO ---
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-PT', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'confirmado': return 'Confirmado';
+                case 'indisponivel': return 'Indisponível';
+                default: return 'Pendente';
+            }
+        }
 
         // Chamar loadData() ao carregar a página para carregar os dados guardados
         document.addEventListener('DOMContentLoaded', () => {
